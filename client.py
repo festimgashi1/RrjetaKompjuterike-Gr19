@@ -19,3 +19,18 @@ def recv_json_line(sock):
         return json.loads(buff.decode("utf-8"))
     except Exception:
         return {"raw": buff.decode("utf-8", errors="ignore")}
+    
+    def connect(host, port, username, token):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((host, port))
+    # auth
+    auth = {"username": username, "token": token}
+    s.sendall((json.dumps(auth) + "\n").encode("utf-8"))
+    welcome = recv_json_line(s)
+    if not welcome or not welcome.get("ok", False):
+        print("[CLIENT] Auth failed or server busy:", welcome)
+        s.close()
+        return None
+    print(f"[CLIENT] Connected. Role={welcome.get('role')} ServerRoot={welcome.get('server_root')}")
+    return s
+
