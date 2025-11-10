@@ -21,3 +21,14 @@ STATS_WRITE_INTERVAL = int(os.environ.get("STATS_WRITE_INTERVAL", "5"))
 MESSAGE_LOG = Path(os.environ.get("MESSAGE_LOG", "messages.log")).resolve()
 
 SERVER_ROOT.mkdir(parents=True, exist_ok=True)
+
+clients_lock = threading.Lock()
+clients = {} 
+
+total_bytes_in = 0
+total_bytes_out = 0
+server_running = True
+
+def safe_send(sock, payload: dict):
+    global total_bytes_out
+    data = (json.dumps(payload) + "\n").encode('utf-8')
