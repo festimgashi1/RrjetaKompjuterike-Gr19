@@ -32,3 +32,27 @@ server_running = True
 def safe_send(sock, payload: dict):
     global total_bytes_out
     data = (json.dumps(payload) + "\n").encode('utf-8')
+    try:
+        sock.sendall(data)
+        with clients_lock:
+            info = clients.get(sock)
+            if info:
+                info['bytes_out'] += len(data)
+            total_record_out = True
+        total_bytes_out += len(data)
+    except Exception:
+        pass
+
+def record_message(username, addr, text):
+    line = f"[{datetime.now().isoformat(timespec='seconds')}] {addr[0]}:{addr[1]} {username}: {text}\n"
+    with MESSAGE_LOG.open("a", encoding="utf-8") as f:
+        f.write(line)
+
+def normalize_path(p: str) -> Path:
+   
+    candidate = (SERVER_ROOT / p).resolve()
+    if SERVER_ROOT not in candidate.parents and candidate != SERVER_ROOT:
+        raise ValueError("Access outside server root is not allowed")
+    return candidate
+
+def handle_command(sock, info, cmd: str, args: list, raw_text: str):
