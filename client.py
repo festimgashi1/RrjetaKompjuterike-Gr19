@@ -95,6 +95,14 @@ try:
                 local = Path(args[0])
                 if not local.exists():
                     print("Local file not found")
+                    continue 
+                 remote_name = args[1] if len(args) > 1 else local.name
+                data_b64 = base64.b64encode(local.read_bytes()).decode("ascii")
+                resp = send_cmd(sock, "/upload", [remote_name, data_b64])
+                print(resp)
+            elif cmd == "/download":
+                if len(args) < 1:
+                    print("Usage: /download <remote_file> [save_as]")
                     continue
 
 
