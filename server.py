@@ -56,3 +56,16 @@ def normalize_path(p: str) -> Path:
     return candidate
 
 def handle_command(sock, info, cmd: str, args: list, raw_text: str):
+     record_message(info['username'], info['addr'], raw_text.strip())
+
+    # throttle for readonly users to satisfy "faster response for admins"
+    if not info['is_admin'] and ARTIFICIAL_DELAY_READONLY > 0:
+        time.sleep(ARTIFICIAL_DELAY_READONLY)
+
+    if cmd == "/ping":
+        return {"ok": True, "data": "pong"}
+
+    if cmd == "/list":
+        directory = normalize_path(args[0]) if args else SERVER_ROOT
+        if not directory.exists() or not directory.is_dir():
+            return {"ok": False, "error": "Directory not found"}
