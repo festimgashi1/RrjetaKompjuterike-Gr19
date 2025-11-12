@@ -87,6 +87,15 @@ def interactive_loop(host, port, username, token):
 
  cmd = parts[0]
         args = parts[1:]
+try:
+            if cmd == "/upload":
+                if len(args) < 1:
+                    print("Usage: /upload <localfile> [remote_name]")
+                    continue
+                local = Path(args[0])
+                if not local.exists():
+                    print("Local file not found")
+                    continue
 
 
 
