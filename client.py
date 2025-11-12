@@ -85,6 +85,8 @@ def interactive_loop(host, port, username, token):
         if not parts:
             continue
 
+ cmd = parts[0]
+        args = parts[1:]
 
 
 
