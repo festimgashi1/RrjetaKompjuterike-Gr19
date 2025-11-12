@@ -58,7 +58,6 @@ def normalize_path(p: str) -> Path:
 def handle_command(sock, info, cmd: str, args: list, raw_text: str):
      record_message(info['username'], info['addr'], raw_text.strip())
 
-    # throttle for readonly users to satisfy "faster response for admins"
     if not info['is_admin'] and ARTIFICIAL_DELAY_READONLY > 0:
         time.sleep(ARTIFICIAL_DELAY_READONLY)
 
@@ -69,3 +68,11 @@ def handle_command(sock, info, cmd: str, args: list, raw_text: str):
         directory = normalize_path(args[0]) if args else SERVER_ROOT
         if not directory.exists() or not directory.is_dir():
             return {"ok": False, "error": "Directory not found"}
+         items = []
+        for entry in sorted(directory.iterdir()):
+            items.append({
+                "name": entry.name,
+                "is_dir": entry.is_dir(),
+                "size": entry.stat().st_size
+            })
+        return {"ok": True, "data": items}
