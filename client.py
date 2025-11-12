@@ -34,3 +34,10 @@ def recv_json_line(sock):
     print(f"[CLIENT] Connected. Role={welcome.get('role')} ServerRoot={welcome.get('server_root')}")
     return s
 
+def send_cmd(sock, cmd, args=None):
+    obj = {"cmd": cmd}
+    if args:
+        obj["args"] = args
+    sock.sendall((json.dumps(obj) + "\n").encode("utf-8"))
+    return recv_json_line(sock)
+
