@@ -46,6 +46,18 @@ def interactive_loop(host, port, username, token):
     sock = None
     while True:
         if sock is None:
+            try:
+                sock = connect(host, port, username, token)
+                if sock is None:
+                    time.sleep(min(backoff, 10))
+                    backoff = min(backoff * 2, 10)
+                    continue
+                backoff = 1
+            except Exception as e:
+                print("[CLIENT] Connect error:", e)
+                time.sleep(min(backoff, 10))
+                backoff = min(backoff * 2, 10)
+                continue
 
 
 
