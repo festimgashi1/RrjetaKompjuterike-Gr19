@@ -70,7 +70,20 @@ def interactive_loop(host, port, username, token):
             return
 
 
+ if line and not line.startswith("/"):
+            try:
+                sock.sendall((line + "\n").encode("utf-8"))
+                resp = recv_json_line(sock)
+                print(resp)
+            except Exception as e:
+                print("[CLIENT] Send error:", e)
+                sock.close()
+                sock = None
+            continue
 
+        parts = line.split()
+        if not parts:
+            continue
 
 
 
