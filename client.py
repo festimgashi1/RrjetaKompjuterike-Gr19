@@ -59,6 +59,16 @@ def interactive_loop(host, port, username, token):
                 backoff = min(backoff * 2, 10)
                 continue
 
+               try:
+            line = input("client> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\n[CLIENT] Bye.")
+            try:
+                sock.close()
+            except Exception:
+                pass
+            return
+
 
 
 
