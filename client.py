@@ -41,3 +41,15 @@ def send_cmd(sock, cmd, args=None):
     sock.sendall((json.dumps(obj) + "\n").encode("utf-8"))
     return recv_json_line(sock)
 
+def interactive_loop(host, port, username, token):
+    backoff = 1
+    sock = None
+    while True:
+        if sock is None:
+
+
+
+
+
+
+
