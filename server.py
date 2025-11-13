@@ -56,7 +56,7 @@ def normalize_path(p: str) -> Path:
     return candidate
 
 def handle_command(sock, info, cmd: str, args: list, raw_text: str):
-     record_message(info['username'], info['addr'], raw_text.strip())
+    record_message(info['username'], info['addr'], raw_text.strip())
 
     if not info['is_admin'] and ARTIFICIAL_DELAY_READONLY > 0:
         time.sleep(ARTIFICIAL_DELAY_READONLY)
@@ -68,7 +68,7 @@ def handle_command(sock, info, cmd: str, args: list, raw_text: str):
         directory = normalize_path(args[0]) if args else SERVER_ROOT
         if not directory.exists() or not directory.is_dir():
             return {"ok": False, "error": "Directory not found"}
-         items = []
+        items = []
         for entry in sorted(directory.iterdir()):
             items.append({
                 "name": entry.name,
