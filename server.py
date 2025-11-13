@@ -76,3 +76,15 @@ def handle_command(sock, info, cmd: str, args: list, raw_text: str):
                 "size": entry.stat().st_size
             })
         return {"ok": True, "data": items}
+    
+    if cmd == "/read":
+        if not args:
+            return {"ok": False, "error": "Usage: /read <filename>"}
+        fpath = normalize_path(args[0])
+        if not fpath.exists() or not fpath.is_file():
+            return {"ok": False, "error": "File not found"}
+        try:
+            content = fpath.read_text(encoding="utf-8", errors="ignore")
+            return {"ok": True, "data": content}
+        except Exception as e:
+            return {"ok": False, "error": f"Read failed: {e}"}
