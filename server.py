@@ -100,3 +100,8 @@ def handle_command(sock, info, cmd: str, args: list, raw_text: str):
             return {"ok": True, "filename": fpath.name, "data_b64": base64.b64encode(data).decode("ascii")}
         except Exception as e:
             return {"ok": False, "error": f"Download failed: {e}"}
+
+    # Admin-only below
+    if cmd in ("/upload", "/delete", "/info", "/search"):
+        if not info['is_admin']:
+            return {"ok": False, "error": "Permission denied: admin only"}
