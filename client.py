@@ -118,5 +118,10 @@ def interactive_loop(host, port, username, token):
                 print(resp)
         except Exception as e:
             print("[CLIENT] Error:", e)
+            try:
+                sock.close()
+            except Exception:
+                pass
+            sock = None
 
 
