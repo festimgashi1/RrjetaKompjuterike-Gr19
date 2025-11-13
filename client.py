@@ -108,8 +108,10 @@ def interactive_loop(host, port, username, token):
                 remote = args[0]
                 save_as = args[1] if len(args) > 1 else Path(remote).name
                 resp = send_cmd(sock, "/download", [remote])
-                 if resp and resp.get("ok") and "data_b64" in resp:
+                if resp and resp.get("ok") and "data_b64" in resp:
                     Path(save_as).write_bytes(base64.b64decode(resp["data_b64"].encode("ascii")))
                     print(f"Saved to {save_as}")
+                else:
+                    print(resp)
 
 
