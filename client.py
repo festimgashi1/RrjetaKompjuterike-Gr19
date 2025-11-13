@@ -113,5 +113,10 @@ def interactive_loop(host, port, username, token):
                     print(f"Saved to {save_as}")
                 else:
                     print(resp)
+            else:
+                resp = send_cmd(sock, cmd, args)
+                print(resp)
+        except Exception as e:
+            print("[CLIENT] Error:", e)
 
 
