@@ -20,10 +20,10 @@ def recv_json_line(sock):
     except Exception:
         return {"raw": buff.decode("utf-8", errors="ignore")}
     
-    def connect(host, port, username, token):
+def connect(host, port, username, token):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((host, port))
-    # auth
+    
     auth = {"username": username, "token": token}
     s.sendall((json.dumps(auth) + "\n").encode("utf-8"))
     welcome = recv_json_line(s)
@@ -59,7 +59,7 @@ def interactive_loop(host, port, username, token):
                 backoff = min(backoff * 2, 10)
                 continue
 
-               try:
+        try:
             line = input("client> ").strip()
         except (EOFError, KeyboardInterrupt):
             print("\n[CLIENT] Bye.")
@@ -70,7 +70,7 @@ def interactive_loop(host, port, username, token):
             return
 
 
- if line and not line.startswith("/"):
+        if line and not line.startswith("/"):
             try:
                 sock.sendall((line + "\n").encode("utf-8"))
                 resp = recv_json_line(sock)
@@ -85,9 +85,10 @@ def interactive_loop(host, port, username, token):
         if not parts:
             continue
 
- cmd = parts[0]
+        cmd = parts[0]
         args = parts[1:]
-try:
+
+        try:
             if cmd == "/upload":
                 if len(args) < 1:
                     print("Usage: /upload <localfile> [remote_name]")
@@ -96,7 +97,7 @@ try:
                 if not local.exists():
                     print("Local file not found")
                     continue 
-                 remote_name = args[1] if len(args) > 1 else local.name
+                remote_name = args[1] if len(args) > 1 else local.name
                 data_b64 = base64.b64encode(local.read_bytes()).decode("ascii")
                 resp = send_cmd(sock, "/upload", [remote_name, data_b64])
                 print(resp)
@@ -104,6 +105,9 @@ try:
                 if len(args) < 1:
                     print("Usage: /download <remote_file> [save_as]")
                     continue
+                remote = args[0]
+                save_as = args[1] if len(args) > 1 else Path(remote).name
+                resp = send_cmd(sock, "/download", [remote])
 
 
 
