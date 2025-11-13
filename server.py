@@ -88,3 +88,15 @@ def handle_command(sock, info, cmd: str, args: list, raw_text: str):
             return {"ok": True, "data": content}
         except Exception as e:
             return {"ok": False, "error": f"Read failed: {e}"}
+        
+    if cmd == "/download":
+        if not args:
+            return {"ok": False, "error": "Usage: /download <filename>"}
+        fpath = normalize_path(args[0])
+        if not fpath.exists() or not fpath.is_file():
+            return {"ok": False, "error": "File not found"}
+        try:
+            data = fpath.read_bytes()
+            return {"ok": True, "filename": fpath.name, "data_b64": base64.b64encode(data).decode("ascii")}
+        except Exception as e:
+            return {"ok": False, "error": f"Download failed: {e}"}
