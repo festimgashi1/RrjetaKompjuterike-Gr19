@@ -120,3 +120,18 @@ def handle_command(sock, info, cmd: str, args: list, raw_text: str):
             return {"ok": True, "data": f"Uploaded {fpath.name} ({len(data)} bytes)"}
         except Exception as e:
             return {"ok": False, "error": f"Upload failed: {e}"}
+
+    if cmd == "/delete":
+        if not args:
+            return {"ok": False, "error": "Usage: /delete <filename>"}
+        fpath = normalize_path(args[0])
+        try:
+            if fpath.is_dir():
+                return {"ok": False, "error": "Refusing to delete directories"}
+            if fpath.exists():
+                fpath.unlink()
+                return {"ok": True, "data": f"Deleted {fpath.name}"}
+            else:
+                return {"ok": False, "error": "File not found"}
+        except Exception as e:
+            return {"ok": False, "error": f"Delete failed: {e}"}
