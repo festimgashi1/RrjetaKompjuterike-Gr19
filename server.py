@@ -148,3 +148,20 @@ def handle_command(sock, info, cmd: str, args: list, raw_text: str):
                     rel = full.relative_to(SERVER_ROOT).as_posix()
                     matches.append(rel)
         return {"ok": True, "data": matches}
+    
+    if cmd == "/info":
+        if not args:
+            return {"ok": False, "error": "Usage: /info <filename>"}
+        fpath = normalize_path(args[0])
+        if not fpath.exists():
+            return {"ok": False, "error": "File not found"}
+        st = fpath.stat()
+        return {"ok": True, "data": {
+            "name": fpath.name,
+            "size": st.st_size,
+            "created": datetime.fromtimestamp(st.st_ctime).isoformat(sep=' ', timespec='seconds'),
+            "modified": datetime.fromtimestamp(st.st_mtime).isoformat(sep=' ', timespec='seconds'),
+            "is_dir": fpath.is_dir()
+        }}
+
+    return {"ok": False, "error": f"Unknown command: {cmd}"}
