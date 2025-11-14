@@ -185,3 +185,70 @@ def client_thread(sock: socket.socket, addr):
                 'bytes_out': 0,
             }
             clients[sock] = info
+
+        try:
+            sock.settimeout(IDLE_TIMEOUT)
+            fp = sock.makefile("rwb", buffering=0)
+            r = fp.readline()
+            if not r:
+                return
+            try:
+                obj = json.loads(r.decode('utf-8'))
+                username = obj.get("username") or "guest"
+                token = obj.get("token", "")
+            except Exception:
+                parts = r.decode('utf-8', errors='ignore').strip().split()
+                if len(parts) >= 3 and parts[0].upper() == "AUTH":
+                    username = parts[1]
+                    token = parts[2]
+                else:
+                    username = "guest"
+                    token = ""
+
+            with clients_lock:
+                info['username'] = username
+                info['is_admin'] = (token == ADMIN_TOKEN)
+                info['last_active'] = time.time()
+
+            safe_send(sock, {"ok": True, "msg": "WELCOME", "server_root": str(SERVER_ROOT),
+                             "role": "admin" if info['is_admin'] else "readonly"})
+
+            while True:
+                try:
+                    line = fp.readline()
+                except socket.timeout:
+                    safe_send(sock, {"ok": False, "error": "Idle timeout, disconnecting"})
+                    break
+
+                if not line:
+                    break
+
+                info['last_active'] = time.time()
+                info['messages'] += 1
+                with clients_lock:
+                    info['bytes_in'] += len(line)
+                total_bytes_in += len(line)
+
+                try:
+                    obj = json.loads(line.decode('utf-8'))
+                    cmd = obj.get("cmd", "")
+                    args = obj.get("args", [])
+                    raw_text = line.decode('utf-8')
+                except Exception:
+                    raw_text = line.decode('utf-8', errors='ignore')
+                    parts = raw_text.strip().split()
+                    cmd = parts[0] if parts else ""
+                    args = parts[1:] if len(parts) > 1 else []
+
+                resp = {}
+                try:
+                    resp = handle_command(sock, info, cmd, args, raw_text)
+                except Exception as e:
+                    traceback.print_exc()
+                    resp = {"ok": False, "error": f"Server error: {e}"}
+
+                safe_send(sock, resp)
+
+        finally:
+            with clients_lock:
+                clients.pop(sock, None)
