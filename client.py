@@ -123,5 +123,14 @@ def interactive_loop(host, port, username, token):
             except Exception:
                 pass
             sock = None
+def main():
+     ap = argparse.ArgumentParser()
+     ap.add_argument("--host", default="127.0.0.1")
+     ap.add_argument("--port", type=int, default=9099)
+     ap.add_argument("--username", default="guest")
+     ap.add_argument("--token", default="") 
+     args = ap.parse_args()
+     interactive_loop(args.host, args.port, args.username, args.token)
 
-
+if __name__ == "__main__":
+    main()
