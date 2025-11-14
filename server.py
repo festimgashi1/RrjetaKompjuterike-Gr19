@@ -135,3 +135,16 @@ def handle_command(sock, info, cmd: str, args: list, raw_text: str):
                 return {"ok": False, "error": "File not found"}
         except Exception as e:
             return {"ok": False, "error": f"Delete failed: {e}"}
+        
+    if cmd == "/search":
+        if not args:
+            return {"ok": False, "error": "Usage: /search <keyword>"}
+        keyword = args[0].lower()
+        matches = []
+        for dirpath, dirnames, filenames in os.walk(SERVER_ROOT):
+            for name in filenames:
+                if keyword in name.lower():
+                    full = Path(dirpath) / name
+                    rel = full.relative_to(SERVER_ROOT).as_posix()
+                    matches.append(rel)
+        return {"ok": True, "data": matches}
