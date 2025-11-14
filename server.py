@@ -105,3 +105,18 @@ def handle_command(sock, info, cmd: str, args: list, raw_text: str):
     if cmd in ("/upload", "/delete", "/info", "/search"):
         if not info['is_admin']:
             return {"ok": False, "error": "Permission denied: admin only"}
+
+    if cmd == "/upload":
+        # args: filename, data_b64
+        if len(args) < 2:
+            return {"ok": False, "error": "Usage: /upload <filename> <data_b64> (or send in JSON 'data_b64')"}
+        filename = args[0]
+        data_b64 = args[1]
+        try:
+            fpath = normalize_path(filename)
+            fpath.parent.mkdir(parents=True, exist_ok=True)
+            data = base64.b64decode(data_b64.encode("ascii"))
+            fpath.write_bytes(data)
+            return {"ok": True, "data": f"Uploaded {fpath.name} ({len(data)} bytes)"}
+        except Exception as e:
+            return {"ok": False, "error": f"Upload failed: {e}"}
