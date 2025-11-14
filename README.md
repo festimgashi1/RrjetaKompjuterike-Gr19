@@ -11,3 +11,11 @@ This project implements a TCP server and client in Python that satisfy the full 
 4. **Message logging**: all client messages are stored in `welcome.txt` for monitoring.
 5. **Idle timeout**: If a client is silent for `IDLE_TIMEOUT` seconds, the server closes the connection. The client auto-reconnects.
 6. **File access**: Full access (rwx) granted to **admin** clients. Read-only clients can `/list`, `/read`, `/download`. Admins can also `/upload`, `/delete`, `/search`, `/info`.
+
+7. **Traffic monitoring** in real-time:
+   - Active connection count
+   - Active client IP addresses
+   - Per-client message count
+   - Total bytes sent/received
+
+   View via typing `STATS` into the server console, or by reading `server_stats.txt` (updated every few seconds).
