@@ -252,3 +252,32 @@ def client_thread(sock: socket.socket, addr):
         finally:
             with clients_lock:
                 clients.pop(sock, None)
+
+def stats_writer():
+    # periodically write stats to LOG_FILE
+    while server_running:
+        try:
+            with clients_lock:
+                data = {
+                    "timestamp": datetime.now().isoformat(timespec='seconds'),
+                    "active_connections": len(clients),
+                    "client_ips": [f"{inf['addr'][0]}:{inf['addr'][1]}" for inf in clients.values()],
+                    "per_client": [
+                        {
+                            "username": inf['username'],
+                            "addr": f"{inf['addr'][0]}:{inf['addr'][1]}",
+                            "messages": inf['messages'],
+                            "bytes_in": inf['bytes_in'],
+                            "bytes_out": inf['bytes_out'],
+                            "role": "admin" if inf['is_admin'] else "readonly",
+                            "last_active": datetime.fromtimestamp(inf['last_active']).isoformat(sep=' ', timespec='seconds')
+                        }
+                        for inf in clients.values()
+                    ],
+                    "total_bytes_in": total_bytes_in,
+                    "total_bytes_out": total_bytes_out,
+                }
+            LOG_FILE.write_text(json.dumps(data, indent=2))
+        except Exception:
+            pass
+        time.sleep(STATS_WRITE_INTERVAL)
