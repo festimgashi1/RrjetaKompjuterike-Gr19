@@ -130,3 +130,7 @@ def main():
      ap.add_argument("--username", default="guest")
      ap.add_argument("--token", default="") 
      args = ap.parse_args()
+     interactive_loop(args.host, args.port, args.username, args.token)
+
+if __name__ == "__main__":
+    main()
