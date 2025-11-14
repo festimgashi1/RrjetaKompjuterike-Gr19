@@ -305,3 +305,25 @@ def console_listener():
                 print("Error printing stats:", e)
         elif cmd.upper() in ("QUIT", "EXIT"):
             os._exit(0)
+
+def main():
+    print(f"[SERVER] Starting on {HOST}:{PORT}")
+    print(f"[SERVER] Root: {SERVER_ROOT}")
+    SERVER_ROOT.mkdir(parents=True, exist_ok=True)
+
+    t1 = threading.Thread(target=stats_writer, daemon=True)
+    t1.start()
+    t2 = threading.Thread(target=console_listener, daemon=True)
+    t2.start()
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind((HOST, PORT))
+        s.listen(16)  # OS backlog
+        print(f"[SERVER] Listening... (MAX_ACTIVE={MAX_ACTIVE})  Type STATS to view live metrics.")
+        while True:
+            conn, addr = s.accept()
+            threading.Thread(target=client_thread, args=(conn, addr), daemon=True).start()
+
+if __name__ == "__main__":
+    main()
