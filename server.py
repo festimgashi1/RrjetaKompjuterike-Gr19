@@ -165,3 +165,23 @@ def handle_command(sock, info, cmd: str, args: list, raw_text: str):
         }}
 
     return {"ok": False, "error": f"Unknown command: {cmd}"}
+
+def client_thread(sock: socket.socket, addr):
+    global total_bytes_in
+    with sock:
+        with clients_lock:
+            if len(clients) >= MAX_ACTIVE:
+                msg = {"ok": False, "error": "Server busy: connection limit reached"}
+                sock.sendall((json.dumps(msg) + "\n").encode("utf-8"))
+                return
+
+            info = {
+                'addr': addr,
+                'username': 'guest',
+                'is_admin': False,
+                'last_active': time.time(),
+                'messages': 0,
+                'bytes_in': 0,
+                'bytes_out': 0,
+            }
+            clients[sock] = info
