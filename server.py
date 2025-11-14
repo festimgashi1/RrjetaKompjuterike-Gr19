@@ -254,7 +254,7 @@ def client_thread(sock: socket.socket, addr):
                 clients.pop(sock, None)
 
 def stats_writer():
-    # periodically write stats to LOG_FILE
+    
     while server_running:
         try:
             with clients_lock:
@@ -281,3 +281,27 @@ def stats_writer():
         except Exception:
             pass
         time.sleep(STATS_WRITE_INTERVAL)
+        
+def console_listener():
+    
+    while server_running:
+        try:
+            cmd = input().strip()
+        except EOFError:
+            break
+        if cmd.upper() == "STATS":
+            try:
+                with clients_lock:
+                    print("=== SERVER STATS ===")
+                    print(f"Active connections: {len(clients)}")
+                    print("Clients:")
+                    for inf in clients.values():
+                        print(f" - {inf['username']}@{inf['addr'][0]}:{inf['addr'][1]} ({'admin' if inf['is_admin'] else 'readonly'}) msgs={inf['messages']} in={inf['bytes_in']} out={inf['bytes_out']}")
+                    print(f"Total bytes in/out: {total_bytes_in}/{total_bytes_out}")
+                    print(f"Server root: {SERVER_ROOT}")
+                    print(f"Stats log: {LOG_FILE}")
+                    print("====================")
+            except Exception as e:
+                print("Error printing stats:", e)
+        elif cmd.upper() in ("QUIT", "EXIT"):
+            os._exit(0)
