@@ -19,3 +19,19 @@ This project implements a TCP server and client in Python that satisfy the full 
    - Total bytes sent/received
 
    View via typing `STATS` into the server console, or by reading `server_stats.txt` (updated every few seconds).
+
+### Client
+1. Creates a TCP socket connection.
+2. One client can have full privileges using an **admin token** (`--token letmein` by default).
+3. Supported commands:
+
+| Command | Description |
+|---|---|
+| `/list [dir]` | List files under server root or directory |
+| `/read <file>` | Read a text file |
+| `/upload <localfile> [remote_name]` | Upload local file (admin) |
+| `/download <file> [save_as]` | Download from server |
+| `/delete <file>` | Delete a file (admin) |
+| `/search <keyword>` | Search filenames (admin) |
+| `/info <file>` | Show size/created/modified (admin) |
+| `/ping` | Check latency |
