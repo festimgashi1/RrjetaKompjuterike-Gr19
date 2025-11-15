@@ -1,0 +1,30 @@
+{
+  "timestamp": "2025-11-15T19:36:04",
+  "active_connections": 2,
+  "client_ips": [
+    "127.0.0.1:57119",
+    "127.0.0.1:57123"
+  ],
+  "per_client": [
+    {
+      "username": "bob",
+      "addr": "127.0.0.1:57119",
+      "messages": 0,
+      "bytes_in": 0,
+      "bytes_out": 141,
+      "role": "readonly",
+      "last_active": "2025-11-15 19:35:35"
+    },
+    {
+      "username": "admin",
+      "addr": "127.0.0.1:57123",
+      "messages": 0,
+      "bytes_in": 0,
+      "bytes_out": 138,
+      "role": "admin",
+      "last_active": "2025-11-15 19:35:49"
+    }
+  ],
+  "total_bytes_in": 0,
+  "total_bytes_out": 279
+}
