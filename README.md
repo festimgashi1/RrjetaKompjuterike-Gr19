@@ -123,3 +123,22 @@ Now you can also:
 - Deleting directories is refused for safety (only file delete allowed).
 - Admin token is a simple shared secret for demo/academic purposes. For production, use TLS + proper authentication.
 
+### GitHub Guidance
+
+- Push **early and often**. Commit in small, incremental steps to avoid penalty points.
+- Make the repository public.
+- Each team member should:
+  - Fork or clone the repo
+  - Add/commit their contributions
+  - Open PRs for review history
+  - Ensure both `server.py` and `client.py` run on their machines
+
+### Grading/Defense Tips
+
+- Be ready to explain:
+  - Socket lifecycle, JSON framing, idle timeout, reconnect behavior
+  - Permission model and why admins are faster
+  - Monitoring metrics & how `STATS` works
+  - How path normalization protects the server
+  - How uploads/downloads are Base64-encoded over the TCP stream
+```
