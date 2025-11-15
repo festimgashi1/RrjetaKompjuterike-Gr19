@@ -100,3 +100,26 @@ Now you can also:
 /info notes.md
 /delete somefile.txt
 ```
+
+### Protocol
+
+- Client authenticates first by sending a single JSON line:
+  ```json
+  {"username": "alice", "token": "letmein"}
+  ```
+- Then each command is sent as JSON line:
+  ```json
+  {"cmd": "/list", "args": []}
+  ```
+- The server responds with JSON per line:
+  ```json
+  {"ok": true, "data": [...]}
+  ```
+- If user types **raw text** (not starting with `/`) in the client shell, it is sent as-is and the server logs it to `messages.log`.
+
+### Security Notes
+
+- Paths are normalized so clients cannot escape the configured `SERVER_ROOT` (blocks `..` traversal).
+- Deleting directories is refused for safety (only file delete allowed).
+- Admin token is a simple shared secret for demo/academic purposes. For production, use TLS + proper authentication.
+
