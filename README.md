@@ -80,3 +80,23 @@ LOG_FILE=server_stats.txt
 ```bash
 python client.py --host 127.0.0.1 --port 9099 --username bob
 ```
+
+Try:
+```
+/list
+/read welcome.txt
+/download notes.md
+Hello server, this is a free text message that will be logged!
+```
+
+### 4) Run an admin client (full access)
+```bash
+python client.py --host 127.0.0.1 --port 9099 --username admin --token letmein
+```
+Now you can also:
+```
+/upload README.md
+/search .md
+/info notes.md
+/delete somefile.txt
+```
