@@ -1,144 +1,205 @@
-# RrjetaKompjuterike-Gr19
+# RrjetaKompjuterike – Gr19
+### TCP Server & Client with Authentication, File Commands, Logging, Timeout & Monitoring
 
-This project implements a TCP server and client in Python that satisfy the full set of requirements:
+This project contains a fully functional TCP Server and Client written in Python using only the standard library.  
+The system supports user authentication, admin/read-only permissions, file operations, automatic reconnect, idle timeout, safe path handling, and real-time monitoring.
 
-## Features Summary
+---
 
-### Server
-1. **Configurable IP/Port** via environment variables `TCP_HOST`, `TCP_PORT`.
-2. **Connection limiting** with `MAX_ACTIVE`; excess connections are refused with a JSON error.
-3. **Request handling**: every connected client can issue at least one command; all incoming text is logged.
-4. **Message logging**: all client messages are stored in `welcome.txt` for monitoring.
-5. **Idle timeout**: If a client is silent for `IDLE_TIMEOUT` seconds, the server closes the connection. The client auto-reconnects.
-6. **File access**: Full access (rwx) granted to **admin** clients. Read-only clients can `/list`, `/read`, `/download`. Admins can also `/upload`, `/delete`, `/search`, `/info`.
+## 🚀 Features Overview
 
-7. **Traffic monitoring** in real-time:
-   - Active connection count
-   - Active client IP addresses
-   - Per-client message count
-   - Total bytes sent/received
+### 🖥️ Server
+- Configurable host and port via environment variables
+- Limits active connections (`MAX_ACTIVE`)
+- Supports admin and read-only roles
+- Logs all client messages to **`messages.log`**
+- Idle timeout disconnection (`IDLE_TIMEOUT`)
+- Safe file access inside `SERVER_ROOT` only
+- Base64 file upload/download support
+- Real-time monitoring of:
+  - Active connections  
+  - Client IP addresses  
+  - Client message counts  
+  - Bytes in/out per client  
+  - Total bytes in/out  
+- Print live stats by typing **`STATS`** in the server console
+- Periodic stats writing to **`server_stats.txt`**
+- Artificial delay for read-only users (admin users respond faster)
+- Thread-per-client architecture
 
-   View via typing `STATS` into the server console, or by reading `server_stats.txt` (updated every few seconds).
+---
 
-### Client
-1. Creates a TCP socket connection.
-2. One client can have full privileges using an **admin token** (`--token letmein` by default).
-3. Supported commands:
+### 👤 Client
+- Connects and authenticates using a JSON handshake
+- Admin access if the token matches `ADMIN_TOKEN`
+- Automatically reconnects if server disconnects or timeout occurs
+- Sends commands using JSON frames (`\n` delimited)
+- Upload/download files using Base64 encoding
+- Supports free-text messages (logged by server)
+- Pretty-print responses
 
-| Command | Description |
-|---|---|
-| `/list [dir]` | List files under server root or directory |
-| `/read <file>` | Read a text file |
-| `/upload <localfile> [remote_name]` | Upload local file (admin) |
-| `/download <file> [save_as]` | Download from server |
-| `/delete <file>` | Delete a file (admin) |
-| `/search <keyword>` | Search filenames (admin) |
-| `/info <file>` | Show size/created/modified (admin) |
-| `/ping` | Check latency |
+---
 
-4. Non-admin clients have **read-only** permissions.
-5. Connect using the correct IP/port and role; protocol uses JSON over newline-delimited frames for reliability.
-6. Sockets are fully defined; failures print clear errors.
-7. Client reads responses from the server and prints them.
-8. Client can send free-form text (not starting with `/`) to be logged by the server.
-9. Admin clients have **lower latency**: the server applies a small artificial delay to read-only clients (`READONLY_DELAY`), making admin responses faster.
-10. Automatic **reconnect** if the server drops the connection due to idle timeout or network errors.
+## 🗂️ Command List
 
-## Quick Start
+| Command | Description | Admin Only |
+|--------|-------------|------------|
+| `/list [dir]` | List directory contents | No |
+| `/read <file>` | Read a file as text | No |
+| `/download <file>` | Download file (Base64) | No |
+| `/ping` | Latency check | No |
+| `/upload <filename> <data_b64>` | Upload file | Yes |
+| `/delete <file>` | Delete file | Yes |
+| `/search <keyword>` | Search filenames | Yes |
+| `/info <file>` | Show file metadata | Yes |
 
-### 1 Create a Python venv (optional)
-```bash
-python -m venv .venv
-source .venv/bin/activate           # Windows: .venv\Scripts\activate
-pip install --upgrade pip
-```
+### Free-text message
+Any line **not starting with `/`** is treated as a normal message:  
+- Server logs it in `messages.log`
+- Responds with:
 
-> No external packages required (standard library only).
+```json
+{"ok": true, "data": "message logged"}
+🔐 Authentication Protocol
+Client must send this as the first message:
 
-### 2 Start the server
-```bash
+json
+Copy code
+{"username": "alice", "token": "letmein"}
+Server responds:
+
+json
+Copy code
+{
+  "ok": true,
+  "msg": "WELCOME",
+  "server_root": "/abs/path/server_root",
+  "role": "admin" | "readonly"
+}
+If token == ADMIN_TOKEN → admin.
+Otherwise → readonly.
+
+🕒 Idle Timeout & Auto-Reconnect
+If a client is inactive longer than IDLE_TIMEOUT seconds, server sends:
+
+json
+Copy code
+{"ok": false, "error": "Idle timeout, disconnecting"}
+Then disconnects.
+
+The client automatically:
+
+Detects the disconnect
+
+Waits with exponential backoff
+
+Reconnects automatically
+
+📊 Real-Time Monitoring
+Type:
+
+nginx
+Copy code
+STATS
+in the server terminal to view:
+
+Active clients
+
+Client usernames & roles
+
+Messages per client
+
+Bytes in/out
+
+Last active timestamps
+
+Total server traffic
+
+Server also writes stats every few seconds into:
+
+Copy code
+server_stats.txt
+📁 Safe File System Access
+All file paths are normalized:
+
+python
+Copy code
+candidate = (SERVER_ROOT / p).resolve()
+This prevents escaping outside server root (no ../.. traversal allowed).
+
+Deleting directories is blocked. Only files may be deleted.
+
+⚙️ Environment Variables
+Variable	Default	Description
+TCP_HOST	127.0.0.1	Server bind IP
+TCP_PORT	9099	Server port
+SERVER_ROOT	./server_root	Sandbox directory
+MAX_ACTIVE	8	Max active connections
+IDLE_TIMEOUT	120	Idle timeout (seconds)
+ADMIN_TOKEN	letmein	Admin token
+READONLY_DELAY	0.12	Delay for readonly users
+MESSAGE_LOG	messages.log	Free-text log file
+LOG_FILE	server_stats.txt	Stats output file
+STATS_WRITE_INTERVAL	5	Stats write interval
+
+▶️ Running the Server
+bash
+Copy code
 export TCP_HOST=127.0.0.1
 export TCP_PORT=9099
 python server.py
-```
-- Type `STATS` in the server terminal anytime for live metrics.
-- Server writes periodic stats to `server_stats.txt`.
+Server output:
 
-Optional env vars:
-```
-SERVER_ROOT=./server_root
-MAX_ACTIVE=8
-IDLE_TIMEOUT=120
-ADMIN_TOKEN=letmein
-READONLY_DELAY=0.12
-STATS_WRITE_INTERVAL=5
-MESSAGE_LOG=messages.log
-LOG_FILE=server_stats.txt
-```
-
-### 3  Run a read-only client
-```bash
+csharp
+Copy code
+[SERVER] Starting on 127.0.0.1:9099
+[SERVER] Listening...
+💻 Running a Read-Only Client
+bash
+Copy code
 python client.py --host 127.0.0.1 --port 9099 --username bob
-```
+Example usage:
 
-Try:
-```
+bash
+Copy code
 /list
-/read welcome.txt
-/download notes.md
-Hello server, this is a free text message that will be logged!
-```
-
-### 4) Run an admin client (full access)
-```bash
+/read notes.txt
+/download notes.txt
+Hello server! This will be logged.
+🔑 Running an Admin Client
+bash
+Copy code
 python client.py --host 127.0.0.1 --port 9099 --username admin --token letmein
-```
-Now you can also:
-```
+Admin examples:
+
+bash
+Copy code
 /upload README.md
-/search .md
-/info notes.md
-/delete somefile.txt
-```
+/search .txt
+/info data.txt
+/delete old.txt
+🔗 JSON Command Protocol
+Send command:
+json
+Copy code
+{"cmd": "/list", "args": []}
+Server response:
+json
+Copy code
+{"ok": true, "data": [...]}
+Error example:
+json
+Copy code
+{"ok": false, "error": "File not found"}
 
-### Protocol
+ Security Notes
+Path traversal is blocked using .resolve()
 
-- Client authenticates first by sending a single JSON line:
-  ```json
-  {"username": "alice", "token": "letmein"}
-  ```
-- Then each command is sent as JSON line:
-  ```json
-  {"cmd": "/list", "args": []}
-  ```
-- The server responds with JSON per line:
-  ```json
-  {"ok": true, "data": [...]}
-  ```
-- If user types **raw text** (not starting with `/`) in the client shell, it is sent as-is and the server logs it to `messages.log`.
+Directory deletion is not allowed
 
-### Security Notes
+Admin token is for demo only (not production secure)
 
-- Paths are normalized so clients cannot escape the configured `SERVER_ROOT` (blocks `..` traversal).
-- Deleting directories is refused for safety (only file delete allowed).
-- Admin token is a simple shared secret for demo/academic purposes. For production, use TLS + proper authentication.
+All file operations stay inside SERVER_ROOT
 
-### GitHub Guidance
 
-- Push **early and often**. Commit in small, incremental steps to avoid penalty points.
-- Make the repository public.
-- Each team member should:
-  - Fork or clone the repo
-  - Add/commit their contributions
-  - Open PRs for review history
-  - Ensure both `server.py` and `client.py` run on their machines
 
-### Grading/Defense Tips
-
-- Be ready to explain:
-  - Socket lifecycle, JSON framing, idle timeout, reconnect behavior
-  - Permission model and why admins are faster
-  - Monitoring metrics & how `STATS` works
-  - How path normalization protects the server
-  - How uploads/downloads are Base64-encoded over the TCP stream
-```
